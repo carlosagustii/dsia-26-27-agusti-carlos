@@ -6,9 +6,8 @@ Para este proyecto se utiliza el dataset **Football Shots Dataset: Top 5 Europea
 
 - **URL de origen:** https://www.kaggle.com/datasets/mat126/shots-dataset-for-footballsoccer
 - **Fuente original de los datos:** Understat (https://understat.com)
-- **Fecha de descarga:** <!-- TODO: dd/mm/2026 -->
 - **Fichero utilizado:** `shots_dataset_cleaned.csv` (completo, no se sube al repo) y `Datos/shots_sample.csv` (muestra)
-- **Licencia:** <!-- TODO: copiar la licencia que indica la página de Kaggle -->
+- **Licencia:** Database Contents License (DbCL) v1.0
 - **Condiciones de uso:** uso educativo y no comercial; los datos proceden de Understat.
 
 ## Descripción
@@ -20,9 +19,9 @@ El objetivo del proyecto es validar la calidad de estos datos y calcular métric
 ## Especificaciones
 
 - **Número de registros (completo):** ~400.000
-- **Número de registros (muestra):** 20.000
-- **Número de columnas:** <!-- TODO -->
-- **Valores nulos en el fichero:** <!-- TODO -->
+- **Número de registros (muestra):** 20832
+- **Número de columnas:** 19
+- **Valores nulos en el fichero:** 2436
 - **Variable objetivo (proyectos II/III):** si el tiro acaba en gol
 
 ## Muestra de datos
@@ -37,11 +36,28 @@ python scripts/crear_muestra.py --input Datos/shots_dataset_cleaned.csv
 
 ## Variables
 
-<!-- TODO: completar con las columnas reales del CSV -->
-
 | Variable | Descripción |
 |---|---|
-| | |
+| `shot_id` | Identificador único del tiro |
+| `match_id` | Identificador del partido |
+| `date` | Fecha y hora del partido |
+| `season` | Temporada (año de inicio): 2019 o 2020 |
+| `league` | Liga (siempre `Liga`, LaLiga) |
+| `h_team` | Equipo local |
+| `a_team` | Equipo visitante |
+| `h_a` | Si el tirador juega en casa (`h`) o fuera (`a`) |
+| `player` | Nombre del jugador que tira |
+| `player_id` | Identificador del jugador |
+| `minute` | Minuto del partido en que se produce el tiro (0–100) |
+| `x` | Coordenada horizontal del tiro, normalizada 0–1 (1 = línea de gol rival) |
+| `y` | Coordenada vertical del tiro, normalizada 0–1 (ancho del campo) |
+| `situation` | Contexto de la jugada: `OpenPlay`, `FromCorner`, `SetPiece`, `DirectFreekick`, `Penalty` |
+| `shot_type` | Parte del cuerpo con la que se tira: `RightFoot`, `LeftFoot`, `Head`, `OtherBodyPart` |
+| `last_action` | Acción previa al tiro (pase, centro, regate…); 28 categorías, con nulos |
+| `preferred_foot` | Pie dominante del jugador |
+| `xg_understat` | Goles esperados (xG) que asigna Understat al tiro (0–1) |
+| `is_goal` | **Variable objetivo**: 1 si el tiro acaba en gol, 0 si no |
+
 
 ## Fuente
 
