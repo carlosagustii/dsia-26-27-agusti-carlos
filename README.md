@@ -1,53 +1,48 @@
-# Proyecto I — Online Shoppers Purchasing Intention
+# Proyecto I — Football Shots (xG)
 
 ## Dataset
 
-Para este proyecto se utiliza el dataset **Online Shoppers Purchasing Intention Dataset**, disponible públicamente en el **UCI Machine Learning Repository**.
+Para este proyecto se utiliza el dataset **Football Shots Dataset: Top 5 European Leagues**, publicado en Kaggle.
 
-- **URL de origen:** https://archive.ics.uci.edu/dataset/468/online+shoppers+purchasing+intention+dataset
-- **Fecha de descarga:** 28/09/2026
-- **Fichero utilizado:** `online_shoppers_intention.csv`
-- **Licencia:** Creative Commons Attribution 4.0 International (CC BY 4.0)
-- **Condiciones de uso:** se permite copiar, redistribuir y adaptar el dataset, siempre que se atribuya correctamente la fuente.
-- **DOI:** https://doi.org/10.24432/C5F88Q
+- **URL de origen:** https://www.kaggle.com/datasets/mat126/shots-dataset-for-footballsoccer
+- **Fuente original de los datos:** Understat (https://understat.com)
+- **Fecha de descarga:** <!-- TODO: dd/mm/2026 -->
+- **Fichero utilizado:** `shots_dataset_cleaned.csv` (completo, no se sube al repo) y `Datos/shots_sample.csv` (muestra)
+- **Licencia:** <!-- TODO: copiar la licencia que indica la página de Kaggle -->
+- **Condiciones de uso:** uso educativo y no comercial; los datos proceden de Understat.
 
 ## Descripción
 
-El dataset contiene información sobre sesiones de usuarios en una tienda online. Cada fila representa una sesión de navegación y recoge datos sobre las páginas visitadas, tiempo de navegación, tipo de visitante, tráfico y otras variables relacionadas con el comportamiento del usuario.
+El dataset contiene los tiros realizados en las cinco grandes ligas europeas (Premier League, LaLiga, Serie A, Bundesliga y Ligue 1) entre las temporadas 2014/15 y 2020/21. Cada fila representa un tiro e incluye la posición desde la que se realizó (coordenadas X e Y normalizadas entre 0 y 1), el resultado del tiro y el valor de xG (*expected goals*) calculado por Understat.
 
-La variable `Revenue` indica si la sesión terminó en una compra.
+El objetivo del proyecto es validar la calidad de estos datos y calcular métricas sobre la eficacia de los tiros. En proyectos posteriores servirá de base para entrenar un modelo propio de xG.
 
 ## Especificaciones
 
-- **Número de registros:** 12.330
-- **Número de columnas:** 18
-- **Valores nulos en el fichero:** 0
-- **Tipo de problema indicado por UCI:** clasificación / clustering
-- **Variable objetivo:** `Revenue`
+- **Número de registros (completo):** ~400.000
+- **Número de registros (muestra):** 20.000
+- **Número de columnas:** <!-- TODO -->
+- **Valores nulos en el fichero:** <!-- TODO -->
+- **Variable objetivo (proyectos II/III):** si el tiro acaba en gol
+
+## Muestra de datos
+
+El CSV completo es demasiado grande para GitHub, así que en el repo solo se incluye una muestra aleatoria reproducible:
+
+```bash
+# 1. Descargar shots_dataset_cleaned.csv de Kaggle y guardarlo en Datos/
+# 2. Generar la muestra
+python scripts/crear_muestra.py --input Datos/shots_dataset_cleaned.csv
+```
 
 ## Variables
 
+<!-- TODO: completar con las columnas reales del CSV -->
+
 | Variable | Descripción |
 |---|---|
-| `Administrative` | Número de páginas administrativas visitadas |
-| `Administrative_Duration` | Tiempo empleado en páginas administrativas |
-| `Informational` | Número de páginas informativas visitadas |
-| `Informational_Duration` | Tiempo empleado en páginas informativas |
-| `ProductRelated` | Número de páginas de producto visitadas |
-| `ProductRelated_Duration` | Tiempo empleado en páginas de producto |
-| `BounceRates` | Tasa de rebote |
-| `ExitRates` | Tasa de salida |
-| `PageValues` | Valor de las páginas visitadas |
-| `SpecialDay` | Cercanía de la visita a una fecha especial |
-| `Month` | Mes de la sesión |
-| `OperatingSystems` | Sistema operativo |
-| `Browser` | Navegador |
-| `Region` | Región |
-| `TrafficType` | Tipo de tráfico |
-| `VisitorType` | Tipo de visitante |
-| `Weekend` | Indica si la sesión ocurrió en fin de semana |
-| `Revenue` | Indica si la sesión terminó en compra |
+| | |
 
 ## Fuente
 
-Sakar, C. & Kastro, Y. (2018). *Online Shoppers Purchasing Intention Dataset*. UCI Machine Learning Repository.
+Football Shots Dataset: Top 5 European Leagues. Kaggle (mat126). Datos de Understat.
