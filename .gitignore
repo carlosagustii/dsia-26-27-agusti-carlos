@@ -1,0 +1,11 @@
+# Entornos y cachés
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Dataset completo (~400k filas): demasiado grande para GitHub.
+# En el repo solo va la muestra (Datos/shots_sample.csv).
+Datos/shots_dataset*.csv
