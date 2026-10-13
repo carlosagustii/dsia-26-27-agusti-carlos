@@ -6,6 +6,6 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Dataset completo (~400k filas): demasiado grande para GitHub.
-# En el repo solo va la muestra (Datos/shots_sample.csv).
-Datos/shots_dataset*.csv
+# Dataset completo (~440k filas): demasiado grande para GitHub.
+# En el repo solo va la muestra data/shots_laliga.csv.
+data/shots_dataset*.csv

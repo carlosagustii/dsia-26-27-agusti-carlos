@@ -8,7 +8,7 @@ from football_shots.validator import validar_tiros
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Valida tiros y calcula métricas")
-    parser.add_argument("--input", default="Datos/shots_laliga.csv")
+    parser.add_argument("--input", default="data/shots_laliga.csv")
     args = parser.parse_args(argv)
 
     df = load(Path(args.input))

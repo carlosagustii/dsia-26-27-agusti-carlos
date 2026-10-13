@@ -6,7 +6,7 @@ Para este proyecto se utiliza el dataset **Football Shots Dataset: Top 5 Europea
 
 - **URL de origen:** https://www.kaggle.com/datasets/mat126/shots-dataset-for-footballsoccer
 - **Fuente original de los datos:** Understat (https://understat.com)
-- **Fichero utilizado:** `shots_dataset_cleaned.csv` (completo, no se sube al repo) y `Datos/shots_sample.csv` (muestra)
+- **Fichero utilizado:** `shots_dataset_cleaned.csv` (completo, no se sube al repo) y `data/shots_laliga.csv` (muestra: LaLiga, temporadas 2019 y 2020)
 - **Licencia:** Database Contents License (DbCL) v1.0
 - **Condiciones de uso:** uso educativo y no comercial; los datos proceden de Understat.
 
@@ -26,12 +26,22 @@ El objetivo del proyecto es validar la calidad de estos datos y calcular métric
 
 ## Muestra de datos
 
-El CSV completo es demasiado grande para GitHub, así que en el repo solo se incluye una muestra aleatoria reproducible:
+El CSV completo es demasiado grande para GitHub, así que en el repo solo se incluye `data/shots_laliga.csv`: los tiros de **LaLiga de las temporadas 2019 y 2020**, con las columnas seleccionadas y renombradas. No se han eliminado duplicados ni errores al generarla: de eso se encarga el validador.
+
+## Estructura
+
+```text
+src/football_shots/   # código: loader, contracts, validator, metrics, cli
+tests/                # tests con pytest
+data/                 # muestra de datos
+```
+
+## Ejecución
 
 ```bash
-# 1. Descargar shots_dataset_cleaned.csv de Kaggle y guardarlo en Datos/
-# 2. Generar la muestra
-python scripts/crear_muestra.py --input Datos/shots_dataset_cleaned.csv
+uv sync
+uv run python -m football_shots.cli
+uv run python -m football_shots.cli --input data/shots_laliga.csv
 ```
 
 ## Variables
