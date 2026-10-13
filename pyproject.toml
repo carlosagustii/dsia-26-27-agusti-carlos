@@ -18,4 +18,16 @@ dev = [
     "pytest-cov>=7.1.0",
 ]
 
-[tool.uv]
+[build-system]
+requires = ["uv_build>=0.8.0,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "football_shots"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "integration: tests que leen el CSV real de data/",
+]
