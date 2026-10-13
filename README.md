@@ -31,7 +31,7 @@ El CSV completo es demasiado grande para GitHub, así que en el repo solo se inc
 ## Estructura
 
 ```text
-src/football_shots/   # código: loader, contracts, validator, metrics, cli
+src/football_shots/   # código: loader, validator, metrics, cli
 tests/                # tests con pytest
 data/                 # muestra de datos
 ```
