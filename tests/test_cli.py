@@ -1,5 +1,7 @@
 """Tests de cli.py: se ejecuta main() y se mira lo que imprime."""
 
+import pytest
+
 from football_shots.cli import main
 
 
@@ -18,6 +20,7 @@ def test_cli_con_csv_pequeno(tmp_path, tiros_df, capsys):
     assert "Iago Aspas" in salida
 
 
+@pytest.mark.integration
 def test_cli_con_datos_reales(capsys):
     # Usa data/shots_laliga.csv por defecto.
     main([])
