@@ -1,0 +1,28 @@
+name: proyecto-i-ci              # nombre que verás en GitHub
+
+on:                              # CUÁNDO se ejecuta:
+  push:
+    branches: [main]             #   cuando subes algo a main
+  pull_request:                  #   cuando abres o actualizas un pull request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest       # el robot usa un ordenador Linux limpio
+    steps:                       # QUÉ hace, en orden:
+      - name: Checkout
+        uses: actions/checkout@v4          # 1. descarga tu repo
+
+      - name: Set up Python
+        uses: actions/setup-python@v5      # 2. instala Python 3.12
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |                             # 3. instala tus dependencias
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Tests + coverage gate (>= 60%)
+        run: pytest -q --cov=football_shots --cov-report=term-missing --cov-fail-under=60
+                                           # 4. ejecuta tus tests; si fallan o la
+                                           #    cobertura baja del 60 %, sale ❌
