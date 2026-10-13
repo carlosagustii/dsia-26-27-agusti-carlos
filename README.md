@@ -7,6 +7,7 @@ Para este proyecto se utiliza el dataset **Football Shots Dataset: Top 5 Europea
 - **URL de origen:** https://www.kaggle.com/datasets/mat126/shots-dataset-for-footballsoccer
 - **Fuente original de los datos:** Understat (https://understat.com)
 - **Fichero utilizado:** `shots_dataset_cleaned.csv` (completo, no se sube al repo) y `data/shots_laliga.csv` (muestra: LaLiga, temporadas 2019 y 2020)
+- **Fecha de descarga:** 5 de octubre de 2026
 - **Licencia:** Database Contents License (DbCL) v1.0
 - **Condiciones de uso:** uso educativo y no comercial; los datos proceden de Understat.
 
@@ -43,6 +44,20 @@ uv sync
 uv run python -m football_shots.cli
 uv run python -m football_shots.cli --input data/shots_laliga.csv
 ```
+
+## Tests
+
+```bash
+uv run pytest -q                       # todos los tests
+uv run pytest -q -m "not integration"  # sin los que leen el CSV real
+uv run pytest -q --cov=football_shots --cov-report=term-missing --cov-fail-under=60
+```
+
+## CI
+
+![CI](https://github.com/carlosagustii/dsia-26-27-agusti-carlos/actions/workflows/ci.yml/badge.svg)
+
+Último run en verde: https://github.com/carlosagustii/dsia-26-27-agusti-carlos/actions/runs/38434368426
 
 ## Variables
 
