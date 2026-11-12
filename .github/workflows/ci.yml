@@ -25,4 +25,4 @@ jobs:
       - name: Tests + coverage gate (>= 60%)
         run: pytest -q --cov=football_shots --cov-report=term-missing --cov-fail-under=60
                                            # 4. ejecuta tus tests; si fallan o la
-                                           #    cobertura baja del 60 %, sale ❌
+                                           #    cobertura baja del 60 %, sale fallo
