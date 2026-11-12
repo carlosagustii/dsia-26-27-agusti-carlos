@@ -4,7 +4,7 @@
 - Reglas del CONJUNTO (shot_id duplicado) -> validar_tiros, porque una fila
   sola no puede saber si otra fila tiene su mismo id.
 
-Valores reales que hay en data/shots_laliga.csv (salen de la exploración):
+Valores reales que hay en data/raw/shots_laliga.csv (salen de la exploración):
   - situation:      OpenPlay, FromCorner, SetPiece, DirectFreekick, Penalty
   - shot_type:      RightFoot, LeftFoot, Head, OtherBodyPart
   - preferred_foot: RightFoot, LeftFoot, both  (y "Right", que hay que corregir)
@@ -20,7 +20,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 
 class ShotRecord(BaseModel):
-    """Un tiro: una fila de data/shots_laliga.csv.
+    """Un tiro: una fila de data/raw/shots_laliga.csv.
 
     Al crear un objeto, Pydantic comprueba los datos y lanza ValidationError
     si algo no cuadra.

@@ -22,7 +22,7 @@ def test_cli_con_csv_pequeno(tmp_path, tiros_df, capsys):
 
 @pytest.mark.integration
 def test_cli_con_datos_reales(capsys):
-    # Usa data/shots_laliga.csv por defecto.
+    # Usa data/raw/shots_laliga.csv por defecto.
     main([])
 
     salida = capsys.readouterr().out
