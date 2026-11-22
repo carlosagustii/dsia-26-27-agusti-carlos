@@ -25,7 +25,7 @@ Modelo de expected goals (xG) con datos de Understat + informes de scouting con 
 ## 1. Alcance
 
 - **Datos:** CSV de tiros de Understat (`data/raw/shots_laliga.csv`), LaLiga, temporadas `2019` (2019-20) y `2020` (2020-21). Son 20.832 filas, de las que 4.704 son duplicados (22,6 %).
-- **Proyecto II:** ingesta, features, entrenamiento, evaluación, scoring por CLI, métricas por jugador y cliente de IA generativa (mock por defecto, Gemini como proveedor real), con logs y tests.
+- **Proyecto II:** ingesta, features, entrenamiento, evaluación, scoring por CLI, métricas por jugador y cliente de IA generativa (mock por defecto, LLM de NVIDIA NIM como proveedor real), con logs y tests.
 - **Proyecto III:** API FastAPI síncrona (`/health`, `/predict`, `/players/{id}/metrics`, `/analyze`) y dashboard Streamlit que consume la API, con despliegue documentado y smoke test.
 - **Extras ⭐ (solo si sobra tiempo):** `/analyze` asíncrono, docker-compose y despliegue en Render.
 
@@ -49,7 +49,7 @@ flowchart LR
     end
     subgraph SALIDAS["Salidas del pipeline"]
       direction TB
-      S["Scoring<br/>xG de cada tiro"] --> P["Métricas por jugador<br/>goles · xG · npxG · goles − xG"] --> G["IA generativa<br/>informe de scouting<br/>mock · Gemini"]
+      S["Scoring<br/>xG de cada tiro"] --> P["Métricas por jugador<br/>goles · xG · npxG · goles − xG"] --> G["IA generativa<br/>informe de scouting<br/>mock · NVIDIA"]
     end
   end
 
@@ -159,9 +159,9 @@ Protocolo:
 
 | Fichero | Entrada | Salida | Tecnología |
 |---|---|---|---|
-| `genai.py` | `PlayerMetrics` | Informe de scouting (texto) | `MockClient` (plantilla determinista) · `GeminiClient` (google-genai, timeout configurable) |
+| `genai.py` | `PlayerMetrics` | Informe de scouting (texto) | `MockClient` (plantilla determinista) · `NvidiaClient` (NVIDIA NIM con el SDK de OpenAI, API compatible; timeout configurable) |
 
-- El proveedor se elige con `GENAI_PROVIDER=mock|gemini`. Por defecto es `mock`.
+- El proveedor se elige con `GENAI_PROVIDER=mock|nvidia`. Por defecto es `mock`.
 - El prompt obliga a usar solo las cifras recibidas, a distinguir xG de npxG y a avisar de que no hay minutos jugados ni de cuándo `in_sample` es true.
 
 ### 3.6 API FastAPI · Proyecto III
@@ -178,7 +178,7 @@ Protocolo:
 | `GET /players/{id}/metrics` | path `id`, query `season` (por defecto 2020) | `PlayerMetrics` |
 | `POST /analyze` | `{"player_id": 123, "season": 2020}` | `{"report": "..."}` |
 
-`degraded` significa que no hay modelo cargado, o que `GENAI_PROVIDER=gemini` está configurado sin API key. `/health` no llama a Gemini.
+`degraded` significa que no hay modelo cargado, o que `GENAI_PROVIDER=nvidia` está configurado sin API key. `/health` no llama al LLM.
 
 **Errores:**
 
@@ -206,7 +206,7 @@ El dashboard solo conoce `API_URL`. Nunca lee `data/` ni `models/`.
 
 | Fichero | Contenido | Entrega |
 |---|---|---|
-| `config.py` | Lee `.env` con python-dotenv (`MODEL_PATH`, `DATA_DIR`, `GENAI_PROVIDER`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `GENAI_TIMEOUT_S`, `API_URL`, `LOG_LEVEL`) y configura `logging` | II |
+| `config.py` | Lee `.env` con python-dotenv (`MODEL_PATH`, `DATA_DIR`, `GENAI_PROVIDER`, `NVIDIA_API_KEY`, `NVIDIA_BASE_URL`, `NVIDIA_MODEL`, `GENAI_TIMEOUT_S`, `API_URL`, `LOG_LEVEL`) y configura `logging` | II |
 | `.env.example` | Plantilla de variables (`.env` va en `.gitignore`) | II |
 | `tests/conftest.py` | Fixture que entrena un modelo mini con `fit_pipeline` sobre `tests/fixtures/shots_mini.csv` y lo guarda en un directorio temporal | II |
 | `tests/fixtures/shots_mini.csv` | ~50 tiros de las dos temporadas, con penaltis (alguno en 2019) y al menos 5 goles | II |
@@ -221,7 +221,7 @@ El dashboard solo conoce `API_URL`. Nunca lee `data/` ni `models/`.
 
 | Proyecto | Dependencias nuevas |
 |---|---|
-| II | `scikit-learn`, `matplotlib`, `python-dotenv`, `google-genai` |
+| II | `scikit-learn`, `matplotlib`, `python-dotenv`, `joblib`, `openai` (cliente de NVIDIA NIM) |
 | III | `fastapi`, `uvicorn`, `httpx`, `streamlit`, `requests` |
 
 `requirements.txt` se genera en cada entrega con:
@@ -261,7 +261,7 @@ Por defecto `uv export` incluye el grupo dev (pytest). Si solo se quieren las de
 9. **Un único modelo, sin versionado.** Para reentrenar: `train`, subir el nuevo artefacto y reiniciar la API.
 10. **CSV en vez de Parquet o SQLite.** Con unos 16.000 tiros no hace falta otra cosa, y los ficheros se leen a simple vista.
 11. **Logs con la stdlib en pipeline y API.** El pipeline registra conteos y métricas de cada paso. La API registra `request_id` y `latency_ms`. Sin librerías extra.
-12. **API síncrona con timeout.** Es lo más simple que funciona para una demo con un usuario. Si Gemini tarda, la API responde 504 en vez de quedarse colgada. La versión asíncrona es un extra.
+12. **API síncrona con timeout.** Es lo más simple que funciona para una demo con un usuario. Si el LLM tarda, la API responde 504 en vez de quedarse colgada. La versión asíncrona es un extra.
 13. **Mock de IA por defecto en tests y CI.** Tests deterministas, sin coste y sin secretos en GitHub Actions.
 14. **El dashboard consume la API.** Un único punto de verdad, y se demuestra que la API sirve a cualquier cliente.
 15. **`Literal` compartidos desde `validator.py`.** La ingesta y la API aceptan las mismas categorías. Una categoría desconocida devuelve 400 antes de llegar al modelo.
@@ -292,7 +292,7 @@ football-xg/
 ├── data/
 │   ├── raw/
 │   │   └── shots_laliga.csv         # movido desde data/
-│   ├── processed/                   # shots.csv, shots_scored.csv, player_metrics.csv
+│   ├── processed/                   # shots.csv, shots_scored.csv, player_metrics.csv (no se suben: se regeneran con `run`)
 │   └── rejected/                    # invalid_rows.csv
 ├── docs/
 │   └── ARQUITECTURA.md          +
@@ -314,7 +314,7 @@ football-xg/
 │   ├── evaluate.py              +
 │   ├── predictor.py             +
 │   ├── metrics.py
-│   ├── genai.py                 +   # MockClient + GeminiClient
+│   ├── genai.py                 +   # MockClient + NvidiaClient
 │   ├── cli.py                       # + comandos ingest / train / score
 │   └── api/
 │       ├── __init__.py
@@ -349,7 +349,7 @@ football-xg/
 |---|---|---|---|---|
 | S1 · 27 oct - 2 nov | 3-4 h | Mover `data/shots_laliga.csv` a `data/raw/` y actualizar la ruta por defecto de la CLI y del test de integración; `config.py` (logging), `ingesta.py`, `features.py`, `train.py`, `evaluate.py` | `ingest` y `train` con logs; `xg_model.joblib` + `xg_model.json`; tabla de métricas frente a `xg_understat`; `calibration.png` | commit `feat: entrenamiento y evaluación xG` |
 | S2 · 3 - 9 nov | 1-2 h | `predictor.py`, comando `score`, `metrics.py`, `genai.py` (solo mock), `conftest.py` + `shots_mini.csv`, `test_features.py`, `test_predictor.py`, `test_genai.py` | `score` produce `shots_scored.csv` y `player_metrics.csv`; informe mock de un jugador; CI en verde | commit `feat: scoring, métricas por jugador e IA mock` |
-| 10 - 12 nov | 1-2 h | `GeminiClient` en `genai.py`, `.env.example`, `AI_USAGE.md`, `README.md` (uso + métricas + calibración), `requirements.txt` | Informe real con Gemini desde la CLI; README completo del Proyecto II | **tag `v0.2.0` · entrega Proyecto II** |
+| 10 - 12 nov | 1-2 h | `NvidiaClient` en `genai.py`, `.env.example`, `AI_USAGE.md`, `README.md` (uso + métricas + calibración), `requirements.txt` | Informe real con el LLM de NVIDIA desde la CLI; README completo del Proyecto II | **tag `v0.2.0` · entrega Proyecto II** |
 | S3 · 13 - 16 nov | 3-4 h | `api/main.py`, `api/schemas.py`, `test_api.py` | Los cuatro endpoints desde `/docs`, con errores 400/404/502/504/500 y logs con `request_id` | commit `feat: API FastAPI` |
 | S4 · 17 - 23 nov | 1-2 h | `dashboard/` (3 ficheros), `smoke_test.sh`, sección de despliegue del README, `requirements.txt` actualizado | Dashboard funcionando contra la API; smoke test en verde | **tag `v1.0.0-rc` · Release Candidate** |
 | S5 · 24 - 30 nov | 1-2 h | Extras ⭐ por orden, si hay tiempo; guion de la exposición | Demo de 5-7 min ensayada | **tag `v1.0.0` · exposición** |
@@ -362,7 +362,7 @@ S1 y S3 superan el presupuesto de 1-2 h: rondan las 3-4 h cada una. El resto cab
 - Modelo entrenado y guardado (`xg_model.joblib` + `xg_model.json`).
 - Métricas frente a `xg_understat` y curva de calibración en el README.
 - Inferencia por CLI (`score` + métricas por jugador).
-- Cliente de IA mock + Gemini.
+- Cliente de IA mock + NVIDIA.
 - Tests (incluida la fixture del modelo mini) con CI en verde.
 
 **Recortes, en este orden, si una semana se alarga:**
@@ -375,7 +375,7 @@ S1 y S3 superan el presupuesto de 1-2 h: rondan las 3-4 h cada una. El resto cab
 | S4 | Dashboard en un único `app.py` con dos pestañas (`st.tabs`) en vez de dos páginas. |
 | S5 | Los extras ⭐ se descartan sin afectar a la entrega. |
 
-Conviene pedir la API key de Gemini en S1 para que no bloquee más tarde.
+Conviene pedir la API key de NVIDIA (build.nvidia.com) en S1 para que no bloquee más tarde.
 
 **Extras ⭐ (S5, en este orden):**
 1. ⭐ `/analyze` asíncrono: `POST` devuelve `job_id` (202) y se consulta con `GET /jobs/{job_id}`. El estado vive en un dict en memoria, con un solo worker.

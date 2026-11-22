@@ -1,4 +1,4 @@
-name: proyecto-i-ci              # nombre que verás en GitHub
+name: ci                         # nombre que verás en GitHub
 
 on:                              # CUÁNDO se ejecuta:
   push:
@@ -20,9 +20,11 @@ jobs:
       - name: Install dependencies
         run: |                             # 3. instala tus dependencias
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt  #    (incluye -e . : instala el paquete)
 
       - name: Tests + coverage gate (>= 60%)
+        env:
+          GENAI_PROVIDER: mock             # IA en modo mock: sin red ni secretos
         run: pytest -q --cov=football_shots --cov-report=term-missing --cov-fail-under=60
                                            # 4. ejecuta tus tests; si fallan o la
                                            #    cobertura baja del 60 %, sale ❌
