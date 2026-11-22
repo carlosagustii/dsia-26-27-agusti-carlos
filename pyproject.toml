@@ -1,15 +1,20 @@
 [project]
 name = "dsia-26-27-agusti-carlos"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "Modelo de expected goals (xG) con datos de Understat e informes de scouting con IA generativa"
 readme = "README.md"
 authors = [
     { name = "carlosagustii", email = "carlosacanga03@gmail.com" }
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "joblib>=1.6.0",
+    "matplotlib>=3.11.2",
+    "openai>=3.57.0",
     "pandas>=3.0.6",
     "pydantic>=2.13.5",
+    "python-dotenv>=1.2.4",
+    "scikit-learn>=1.9.1",
 ]
 
 [dependency-groups]
