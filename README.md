@@ -189,25 +189,20 @@ Mayor diferencia entre goles sin penalti y npxG en 2020-21:
 
 `report` genera un informe de scouting de un jugador a partir de sus métricas. El proveedor se elige con `GENAI_PROVIDER`:
 
-| Proveedor | Uso | Requisitos |
-|---|---|---|
-| `mock` (por defecto) | Tests, CI y demo sin red. Plantilla determinista | Ninguno |
-| `nvidia` | LLM real servido por [NVIDIA NIM](https://build.nvidia.com) (API compatible con OpenAI). Modelo por defecto: `meta/llama-3.3-70b-instruct` | `NVIDIA_API_KEY` en `.env` (gratuita, empieza por `nvapi-`) |
+| Proveedor | Uso |
+|---|---|
+| `mock` (por defecto) | Tests, CI y demo sin red. Plantilla determinista |
+| `nvidia` | LLM real servido por [NVIDIA NIM](https://build.nvidia.com) (API compatible con OpenAI). Modelo: nvidia/nemotron-3.5-bolt-e4b |
 
-Para usar NVIDIA: crea una cuenta en build.nvidia.com, genera una API key, ponla en `.env` como `NVIDIA_API_KEY=nvapi-...` y ejecuta `report --provider nvidia` (o `GENAI_PROVIDER=nvidia`).
+Ejemplo:
 
-El *system prompt* obliga al LLM a usar **solo las cifras recibidas**, a distinguir xG de npxG y a avisar de que no hay minutos jugados y de cuándo la temporada es in-sample. Los errores del proveedor se convierten en `GenAIError` / `GenAITimeoutError` (timeout configurable con `GENAI_TIMEOUT_S`), que la API del Proyecto III traducirá a 502 / 504.
+PS C:\TRASTEO\dsia-26-27-agusti-carlos> uv run python -m football_shots.cli report --player Benzema --provider nvidia
+2026-11-22 21:36:04,310 INFO httpx2 | HTTP Request: POST https://integrate.api.nvidia.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-11-22 21:36:04,390 INFO football_shots.genai | genai_report provider=nvidia player_id=2370 chars=375
+Karim Benzema (id 2370) en 2020-21 (LaLiga) presenta 123 tiros (122 sin penaltis) y 23 goles (22 sin penaltis). El xG del modelo es 15.93 y npxG es 15.09. El npxG por tiro es 0.124. No hay minutos jugados, por lo tanto, no se presentan métricas por 90 minutos. El modelo no se entrenó con esta temporada.
 
-Ejemplo (mock):
+Su eficacia de cara a puerta es superior a la esperada por el modelo.
 
-```text
-Karim Benzema (2020-21): 23 goles en 123 tiros, con 15.93 xG y 15.09 npxG (Understat: 19.45).
-Sin penaltis suma 22 goles frente a 15.09 npxG (+6.91), así que rinde por encima de la calidad
-de sus ocasiones. Genera 0.124 npxG por tiro. Aviso: no hay minutos jugados, por lo que no se
-calculan métricas por 90'. [informe generado en modo mock]
-```
-
----
 
 ## Estructura
 
@@ -261,10 +256,6 @@ El núcleo no cambia; se añade una capa de producto encima:
 - **API FastAPI:** `/health`, `/predict` (usa `XGPredictor.predict_one`), `/players/{id}/metrics` (lee `player_metrics.csv`) y `/analyze` (usa `genai.generate_report`, con 502/504 para los errores del proveedor).
 - **Dashboard Streamlit** que consume la API: predecir un tiro y ver un jugador con su informe de IA.
 - Smoke test, sección de despliegue y tag `v1.0.0-rc`.
-
-## Uso de IA
-
-Ver [`AI_USAGE.md`](AI_USAGE.md).
 
 ## Fuente
 
