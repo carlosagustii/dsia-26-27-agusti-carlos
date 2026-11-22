@@ -190,7 +190,7 @@ Mayor diferencia entre goles sin penalti y npxG en 2020-21:
 `report` genera un informe de scouting de un jugador a partir de sus métricas. El proveedor se elige con `GENAI_PROVIDER`:
 
 | Proveedor | Uso |
-|---|---|---|
+|---|---|
 | `mock` (por defecto) | Tests, CI y demo sin red. Plantilla determinista |
 | `nvidia` | LLM real servido por [NVIDIA NIM](https://build.nvidia.com) (API compatible con OpenAI). Modelo: nvidia/nemotron-3.5-bolt-e4b |
 
