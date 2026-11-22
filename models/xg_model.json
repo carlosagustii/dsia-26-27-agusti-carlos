@@ -1,0 +1,89 @@
+{
+  "model": {
+    "name": "logistic",
+    "params": {
+      "C": 1.0
+    }
+  },
+  "features": {
+    "numeric": [
+      "distance",
+      "angle",
+      "minute"
+    ],
+    "categorical": [
+      "situation",
+      "shot_type",
+      "last_action"
+    ]
+  },
+  "input_columns": [
+    "x",
+    "y",
+    "minute",
+    "situation",
+    "shot_type",
+    "last_action"
+  ],
+  "train_season": 2019,
+  "test_season": 2020,
+  "n_train": 8165,
+  "n_test": 7673,
+  "penalty_xg": 0.8322,
+  "n_penalties_train": 149,
+  "cv_results": [
+    {
+      "name": "logistic",
+      "params": {
+        "C": 0.1
+      },
+      "cv_log_loss": 0.26225
+    },
+    {
+      "name": "logistic",
+      "params": {
+        "C": 1.0
+      },
+      "cv_log_loss": 0.26163
+    },
+    {
+      "name": "logistic",
+      "params": {
+        "C": 10.0
+      },
+      "cv_log_loss": 0.26173
+    },
+    {
+      "name": "hist_gb",
+      "params": {
+        "learning_rate": 0.05,
+        "max_iter": 200,
+        "max_leaf_nodes": 15
+      },
+      "cv_log_loss": 0.26792
+    },
+    {
+      "name": "hist_gb",
+      "params": {
+        "learning_rate": 0.03,
+        "max_iter": 300,
+        "max_depth": 4
+      },
+      "cv_log_loss": 0.26402
+    }
+  ],
+  "test_metrics": {
+    "model": {
+      "log_loss": 0.2833,
+      "brier": 0.081,
+      "roc_auc": 0.7769
+    },
+    "xg_understat": {
+      "log_loss": 0.262,
+      "brier": 0.0752,
+      "roc_auc": 0.8134
+    }
+  },
+  "sklearn_version": "1.9.1",
+  "trained_at": "2026-11-22T19:53:49+00:00"
+}
