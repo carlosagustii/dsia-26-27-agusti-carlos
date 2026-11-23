@@ -1,6 +1,6 @@
 [project]
 name = "dsia-26-27-agusti-carlos"
-version = "0.2.0"
+version = "1.0.0rc1"
 description = "Modelo de expected goals (xG) con datos de Understat e informes de scouting con IA generativa"
 readme = "README.md"
 authors = [
