@@ -1,0 +1,39 @@
+# Arranque local de la API y el dashboard con la misma imagen.
+#   docker compose up --build
+#   Dashboard: http://localhost:8501 · API: http://localhost:8000/docs
+# Lee .env si existe (cp .env.example .env y añade NVIDIA_API_KEY).
+# Sin .env, la API arranca pero /health sale degraded (falta la key):
+# para probar sin key, usa GENAI_PROVIDER=mock docker compose up --build
+
+services:
+  api:
+    build: .
+    image: xg-app
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Si se define en la shell, tiene prioridad sobre .env (útil para el modo mock).
+      GENAI_PROVIDER: ${GENAI_PROVIDER:-nvidia}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 6
+
+  dashboard:
+    build: .        # misma imagen que la API (la segunda build sale de la caché)
+    image: xg-app
+    command: streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+    environment:
+      API_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    healthcheck:
+      disable: true
+    depends_on:
+      api:
+        condition: service_healthy

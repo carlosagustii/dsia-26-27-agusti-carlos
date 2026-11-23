@@ -1,0 +1,13 @@
+.git
+.github
+.venv
+.env
+**/__pycache__
+.pytest_cache
+.coverage
+htmlcov
+.ruff_cache
+# Los genera el build a partir de data/raw
+data/processed/*
+data/rejected/*
+tests/
