@@ -9,13 +9,14 @@ A partir de los tiros de LaLiga (temporadas 2019-20 y 2020-21) se construye un p
 1. **valida** los datos con un contrato Pydantic (Proyecto I);
 2. **entrena un modelo propio de expected goals (xG)** con scikit-learn y lo compara con el xG de Understat;
 3. **puntúa** cada tiro y calcula **métricas por jugador** (goles, xG, npxG, goles − xG…);
-4. genera un **informe de scouting con IA generativa** (mock o LLM de NVIDIA).
+4. genera un **informe de scouting con IA generativa** (LLM de NVIDIA);
+5. lo sirve todo con una **API FastAPI** y un **dashboard Streamlit**, en contenedores Docker y desplegado en Render (Proyecto III).
 
 | Entrega | Contenido | Tag |
 |---|---|---|
 | Proyecto I | loader, validator, metrics, CLI, tests y CI | — |
 | **Proyecto II** | ingesta, features, entrenamiento, evaluación, scoring, métricas por jugador, IA generativa | `v0.2.0` |
-| Proyecto III | API FastAPI + dashboard Streamlit + despliegue (amplía este mismo repo) | `v1.0.0-rc` |
+| **Proyecto III** | API FastAPI + dashboard Streamlit + Docker + Render (amplía este mismo repo) | `v1.0.0-rc` / `v1.0.0` |
 
 El diseño completo (diagramas, decisiones y limitaciones) está en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md).
 
@@ -82,7 +83,7 @@ Requiere Python 3.12 y [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync                      # crea .venv con las dependencias
-cp .env.example .env         # configuración (por defecto IA en modo mock)
+cp .env.example .env         # configuración: añade tu NVIDIA_API_KEY
 ```
 
 Sin uv: `python -m venv .venv`, activar el entorno y `pip install -r requirements.txt`.
@@ -187,22 +188,36 @@ Mayor diferencia entre goles sin penalti y npxG en 2020-21:
 
 ### 5. IA generativa
 
-`report` genera un informe de scouting de un jugador a partir de sus métricas. El proveedor se elige con `GENAI_PROVIDER`:
+`report` genera un informe de scouting de un jugador a partir de sus métricas.
 
-| Proveedor | Uso |
-|---|---|
-| `mock` (por defecto) | Tests, CI y demo sin red. Plantilla determinista |
-| `nvidia` | LLM real servido por [NVIDIA NIM](https://build.nvidia.com) (API compatible con OpenAI). Modelo: nvidia/nemotron-3.5-bolt-e4b |
+- **Proveedor:** LLM `nvidia/nemotron-3.5-bolt-e4b`, servido por [NVIDIA NIM](https://build.nvidia.com) (API compatible con OpenAI). Es el que trae configurado `.env.example` (`GENAI_PROVIDER=nvidia`).
+- **Doble de pruebas:** `MockClient` (`GENAI_PROVIDER=mock`) es una plantilla determinista. La usan los tests y el CI: sin red, sin coste y sin secretos. También es el valor por defecto si no hay `.env`.
 
-Ejemplo:
+Para usar NVIDIA, crea una API key gratuita en build.nvidia.com (empieza por `nvapi-`) y ponla en `.env` como `NVIDIA_API_KEY=nvapi-...`.
 
-PS C:\TRASTEO\dsia-26-27-agusti-carlos> uv run python -m football_shots.cli report --player Benzema --provider nvidia
-2026-11-22 21:36:04,310 INFO httpx2 | HTTP Request: POST https://integrate.api.nvidia.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-11-22 21:36:04,390 INFO football_shots.genai | genai_report provider=nvidia player_id=2370 chars=375
-Karim Benzema (id 2370) en 2020-21 (LaLiga) presenta 123 tiros (122 sin penaltis) y 23 goles (22 sin penaltis). El xG del modelo es 15.93 y npxG es 15.09. El npxG por tiro es 0.124. No hay minutos jugados, por lo tanto, no se presentan métricas por 90 minutos. El modelo no se entrenó con esta temporada.
+El *system prompt* obliga al LLM a:
+- usar **solo las cifras recibidas**;
+- distinguir xG de npxG;
+- avisar de que no hay minutos jugados y de cuándo la temporada es in-sample.
+
+Los errores del proveedor se convierten en `GenAIError` o `GenAITimeoutError`; el timeout se configura con `GENAI_TIMEOUT_S`. La API los traduce a 502 / 504.
+
+```bash
+uv run python -m football_shots.cli report --player Benzema
+```
+
+Ejemplo de informe con NVIDIA:
+
+```text
+Karim Benzema (id 2370) en 2020-21 (LaLiga) presenta 123 tiros (122 sin penaltis) y 23 goles (22 sin penaltis).
+El xG del modelo es 15.93 y npxG es 15.09. El npxG por tiro es 0.124. No hay minutos jugados, por lo tanto,
+no se presentan métricas por 90 minutos. El modelo no se entrenó con esta temporada.
 
 Su eficacia de cara a puerta es superior a la esperada por el modelo.
+```
 
+
+---
 
 ## Estructura
 
@@ -219,13 +234,22 @@ src/football_shots/
   metrics.py     # métricas del Proyecto I + métricas por jugador
   genai.py       # MockClient + NvidiaClient
   cli.py         # summary · ingest · train · score · report · run
+  api/
+    main.py        # create_app(): middleware, handlers de error y endpoints
+    schemas.py     # modelos Pydantic de entrada y salida
+    monitoring.py  # MetricsStore: contadores, latencias y últimas peticiones
+dashboard/
+  app.py         # Streamlit: 3 pestañas (tiro · jugador + IA · operación)
+  api_client.py  # cliente HTTP de la API (solo usa API_URL)
 tests/
   fixtures/shots_mini.csv   # 50 tiros reales para entrenar un modelo mini
-  test_*.py                 # un fichero por módulo
+  test_*.py                 # un fichero por módulo (test_api.py para la API)
+scripts/smoke_test.sh       # smoke test de la API desplegada
 data/raw/        # muestra de datos (en el repo)
 models/          # modelo entrenado + metadatos (en el repo)
 reports/         # curva de calibración
 docs/            # arquitectura
+Dockerfile · docker-compose.yml · render.yaml
 ```
 
 ---
@@ -233,7 +257,7 @@ docs/            # arquitectura
 ## Tests
 
 ```bash
-uv run pytest -q                       # todos (111 tests)
+uv run pytest -q                       # todos (144 tests)
 uv run pytest -q -m "not integration"  # sin los que leen el CSV real
 uv run pytest -q --cov=football_shots --cov-report=term-missing --cov-fail-under=60
 ```
@@ -241,21 +265,160 @@ uv run pytest -q --cov=football_shots --cov-report=term-missing --cov-fail-under
 - Cobertura actual: **99 %**.
 - Los tests del modelo usan una fixture (`conftest.py`) que entrena un **modelo mini** con `fit_pipeline` sobre `tests/fixtures/shots_mini.csv`, así que no dependen del `.joblib` de `models/` ni se rompen al reentrenar.
 - Las dos rutas del predictor (modelo y penalti), la CLI de extremo a extremo y el cliente NVIDIA (con un cliente falso, sin red) tienen tests propios.
-- La IA se prueba siempre en modo mock: deterministas, sin coste y sin secretos.
+- La IA se prueba siempre con el mock o con clientes falsos: tests deterministas, sin coste y sin secretos.
+- La API se prueba con `TestClient` sobre `create_app(...)`, inyectando el modelo mini, un `player_metrics.csv` temporal y clientes de IA falsos que simulan timeouts y errores.
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`) ejecuta los tests con el umbral de cobertura del 60 % en cada push a `main` y en cada pull request, con `GENAI_PROVIDER=mock`.
+GitHub Actions (`.github/workflows/ci.yml`) se ejecuta en cada push a `main` y en cada pull request, con dos jobs:
+
+1. **test:** pytest con el umbral de cobertura del 60 %, con `GENAI_PROVIDER=mock`.
+2. **docker** (si `test` pasa): construye la imagen, arranca la API en modo mock, espera a `/health` y ejecuta `scripts/smoke_test.sh`.
+
+El CI nunca usa secretos ni llama a NVIDIA.
 
 ---
 
-## Qué se ampliará en el Proyecto III
+## Proyecto III · API, dashboard y despliegue
 
-El núcleo no cambia; se añade una capa de producto encima:
+El núcleo de los Proyectos I y II no cambia: la API lo reutiliza (`XGPredictor`, `player_metrics.csv`, `find_player`, `genai`) y el dashboard solo habla con la API por HTTP.
 
-- **API FastAPI:** `/health`, `/predict` (usa `XGPredictor.predict_one`), `/players/{id}/metrics` (lee `player_metrics.csv`) y `/analyze` (usa `genai.generate_report`, con 502/504 para los errores del proveedor).
-- **Dashboard Streamlit** que consume la API: predecir un tiro y ver un jugador con su informe de IA.
-- Smoke test, sección de despliegue y tag `v1.0.0-rc`.
+```mermaid
+flowchart LR
+  U[Navegador] --> D[Dashboard Streamlit<br/>dashboard/app.py]
+  D -->|HTTP · API_URL| A[API FastAPI<br/>football_shots.api]
+  A --> P[XGPredictor<br/>models/xg_model.joblib]
+  A --> PM[(player_metrics.csv)]
+  A -->|/analyze| N[NVIDIA NIM<br/>nemotron-3.5-bolt-e4b]
+  subgraph Docker["Imagen Docker única (docker-compose en local · Render en producción)"]
+    D
+    A
+    P
+    PM
+  end
+```
+
+### Endpoints
+
+| Método y ruta | Qué hace | Errores |
+|---|---|---|
+| `GET /health` | Estado y checks (`model_loaded`, `player_metrics_loaded`, `genai_configured`). Nunca llama al LLM | 503 si está `degraded` |
+| `POST /predict` | xG de un tiro (`source`: `model` o `penalty_rule`) | 400, 503 |
+| `GET /players?season=2020&min_shots=1` | Jugadores de una temporada, ordenados por tiros | 503 |
+| `GET /players/{player_id}/metrics?season=2020` | Métricas de un jugador | 404 |
+| `POST /analyze` | Informe de scouting con IA del jugador | 404, 502, 503, 504 |
+| `GET /metrics` | Métricas de operación en memoria | — |
+
+La documentación interactiva está en `/docs`.
+
+```bash
+curl -X POST http://localhost:8000/predict -H 'Content-Type: application/json' \
+  -d '{"x": 0.8952, "y": 0.5, "minute": 45, "situation": "OpenPlay", "shot_type": "RightFoot", "last_action": "Pass"}'
+# {"xg": 0.2426, "source": "model", "request_id": "..."}
+
+curl -X POST http://localhost:8000/analyze -H 'Content-Type: application/json' \
+  -d '{"player_id": 2518, "season": 2020}'
+# {"player_id": 2518, "season": 2020, "report": "...", "provider": "nvidia", "latency_ms": ..., "request_id": "..."}
+```
+
+### Arranque en local con uv
+
+Hacen falta `data/processed/player_metrics.csv` (con `ingest` y `score`) y un `.env` con la key de NVIDIA.
+
+```bash
+uv run python -m football_shots.cli ingest && uv run python -m football_shots.cli score
+```
+
+Terminal 1, la API (en http://localhost:8000/docs):
+
+```bash
+uv run uvicorn football_shots.api.main:app --port 8000
+```
+
+Terminal 2, el dashboard (en http://localhost:8501):
+
+```bash
+uv run streamlit run dashboard/app.py
+```
+
+Sin API key: `GENAI_PROVIDER=mock uv run uvicorn football_shots.api.main:app --port 8000`.
+
+### Arranque con Docker
+
+```bash
+docker compose up --build
+```
+
+- Dashboard: http://localhost:8501
+- API: http://localhost:8000/docs
+
+La imagen es la misma para los dos servicios. En el build se regenera `data/processed` (no se entrena: se usa el modelo del repo) y se ejecuta con un usuario sin privilegios. Compose lee `.env` si existe.
+
+El dashboard espera a que `/health` esté en verde. Sin key de NVIDIA, la API sale `degraded`; para probar sin key, usa `GENAI_PROVIDER=mock docker compose up --build`.
+
+### Monitorización
+
+- **`/health`** devuelve `status: ok` o `degraded`, los checks y el motivo de los que fallan (`details`). Si alguno falla responde **503**, así que Render y docker-compose lo detectan.
+- **`/metrics`**, en memoria (un worker), devuelve:
+  - uptime;
+  - por ruta: peticiones, errores 4xx/5xx, % de errores y latencia p50/p95;
+  - la latencia del LLM medida aparte, con llamadas y fallos;
+  - las últimas 20 peticiones;
+  - la información del modelo (entrenamiento y métricas de test frente a Understat).
+  
+  No cuenta sus propias peticiones.
+- **`request_id`:** cada petición recibe un id que aparece en la cabecera `X-Request-ID`, en la línea de log (`request request_id=… method=… path=… status=… latency_ms=…`), en el cuerpo de los errores y en el dashboard. Con él se encuentra en los logs cualquier error que vea el usuario.
+
+La pestaña **Operación** del dashboard muestra todo esto.
+
+### Errores
+
+Todas las respuestas de error tienen la forma `{"error": "...", "request_id": "..."}`.
+
+| Código | Cuándo |
+|---|---|
+| 400 | Entrada inválida (campo fuera de rango, categoría desconocida, JSON mal formado). Se sustituye el 422 por defecto de FastAPI |
+| 404 | Jugador inexistente en esa temporada, o ruta inexistente |
+| 500 | Error inesperado. Mensaje genérico (`Error interno`), sin traza. El detalle queda en el log con el `request_id` |
+| 502 | El proveedor de IA devolvió un error |
+| 503 | Servicio no disponible: falta el modelo o las métricas, o la IA no está configurada (sin `NVIDIA_API_KEY`) |
+| 504 | El proveedor de IA superó el timeout (`GENAI_TIMEOUT_S`) |
+
+### Despliegue
+
+Render, con dos Web Services Docker definidos en `render.yaml`:
+
+1. **Build:** Render construye el `Dockerfile` del repo (rama `main`). En local: `docker build -t xg-app .`
+2. **Variables de entorno:**
+   - En `xg-api`: `NVIDIA_API_KEY` (a mano en el panel de Render; nunca en el repo). El resto ya viene en `render.yaml`: `GENAI_PROVIDER=nvidia`, `NVIDIA_MODEL`, `NVIDIA_BASE_URL`, `GENAI_TIMEOUT_S` y `LOG_LEVEL`.
+   - En `xg-dashboard`: `API_URL` con la URL pública de `xg-api`.
+3. **Arranque:**
+   - `xg-api` usa el `CMD` de la imagen (`uvicorn` en `$PORT`).
+   - `xg-dashboard` usa `streamlit run dashboard/app.py --server.port $PORT`.
+   - Render comprueba `xg-api` con `/health`.
+4. **Smoke:**
+
+   ```bash
+   scripts/smoke_test.sh https://<xg-api>.onrender.com
+   ```
+
+   Con `SMOKE_ANALYZE=1` delante, también prueba `/analyze` (gasta una llamada al LLM).
+5. **Rollback:** `git checkout <tag anterior>` (p. ej. `v1.0.0-rc`) y redeploy en Render de ese commit (*Manual Deploy → Deploy a specific commit*), o revertir el commit en `main`.
+
+Pasos en Render: *New → Blueprint →* elegir este repo, rellenar `NVIDIA_API_KEY` en `xg-api`, desplegar, copiar su URL en `API_URL` de `xg-dashboard` y redesplegar el dashboard.
+
+| Servicio | URL |
+|---|---|
+| API (`xg-api`) | `<pendiente>` |
+| Dashboard (`xg-dashboard`) | `<pendiente>` |
+
+El plan gratuito de Render se duerme tras ~15 min sin uso y tarda ~1 min en despertar: abre las URLs unos minutos antes de usarlas.
+
+---
+
+## Uso de IA
+
+Ver [`AI_USAGE.md`](AI_USAGE.md).
 
 ## Fuente
 
