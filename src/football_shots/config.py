@@ -33,7 +33,7 @@ TEST_SEASON = 2020
 
 GENAI_PROVIDER = os.getenv("GENAI_PROVIDER", "mock")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
-NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
+NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "nvidia/nemotron-3.5-bolt-e4b")
 NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "meta/llama-3.3-70b-instruct")
 GENAI_TIMEOUT_S = float(os.getenv("GENAI_TIMEOUT_S", "30"))
 
