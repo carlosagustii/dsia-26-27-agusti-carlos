@@ -34,7 +34,8 @@ services:
     branch: main
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    dockerCommand: sh -c "streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true"
+    # Script en vez de un comando con comillas: funciona aunque Render lo ejecute sin shell.
+    dockerCommand: sh scripts/start_dashboard.sh
     envVars:
       # URL pública de shotiq-api (p. ej. https://shotiq-api-xxxx.onrender.com), se pega a mano.
       - key: API_URL

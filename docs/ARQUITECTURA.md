@@ -252,7 +252,7 @@ Por defecto `uv export` incluye el grupo dev (pytest). Si solo se quieren las de
 2. **Variables de entorno:** `NVIDIA_API_KEY` a mano en Render (en local, en `.env`); el resto en `render.yaml`. `API_URL` del dashboard con la URL pública de la API.
 3. **Arranque:**
    - API: `uvicorn football_shots.api.main:app --host 0.0.0.0 --port $PORT` (CMD de la imagen)
-   - Dashboard: `streamlit run dashboard/app.py --server.port $PORT`
+   - Dashboard: `sh scripts/start_dashboard.sh` (Streamlit en `$PORT`)
 4. **Smoke:** `scripts/smoke_test.sh <URL de la API>`
 5. **Rollback:** `git checkout <tag anterior>` y redeploy de ese commit en Render.
 

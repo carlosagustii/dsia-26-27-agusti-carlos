@@ -394,7 +394,7 @@ Render, con dos Web Services Docker definidos en `render.yaml`:
    - En `shotiq-dashboard`: `API_URL` con la URL pública de `shotiq-api`.
 3. **Arranque:**
    - `shotiq-api` usa el `CMD` de la imagen (`uvicorn` en `$PORT`).
-   - `shotiq-dashboard` usa `streamlit run dashboard/app.py --server.port $PORT`.
+   - `shotiq-dashboard` usa `sh scripts/start_dashboard.sh` (Streamlit en `$PORT`).
    - Render comprueba `shotiq-api` con `/health`.
 4. **Smoke:**
 
