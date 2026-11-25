@@ -416,10 +416,6 @@ El plan gratuito de Render se duerme tras ~15 min sin uso y tarda ~1 min en desp
 
 ---
 
-## Uso de IA
-
-Ver [`AI_USAGE.md`](AI_USAGE.md).
-
 ## Fuente
 
 Football Shots Dataset: Top 5 European Leagues. Kaggle (mat126). Datos de Understat.

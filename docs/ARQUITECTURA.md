@@ -225,7 +225,6 @@ El dashboard solo conoce `API_URL`. Nunca importa `football_shots` ni lee `data/
 | `Dockerfile` · `.dockerignore` | Imagen única (`python:3.12-slim`, usuario sin privilegios) que regenera `data/processed` en el build; CMD por defecto: la API en `$PORT` | III |
 | `docker-compose.yml` | Servicios `api` y `dashboard` con la misma imagen; el dashboard espera a que la API esté sana | III |
 | `render.yaml` | Blueprint de Render con dos Web Services Docker: `xg-api` y `xg-dashboard` | III |
-| `AI_USAGE.md` | Uso de IA en el desarrollo | II y III |
 | `README.md` | Uso de la CLI, métricas del modelo, curva de calibración y sección de despliegue | II y III |
 
 **Dependencias** (se añaden a las que ya usa el paquete, como pandas y Pydantic):
@@ -350,7 +349,6 @@ dsia-26-27-agusti-carlos/
 ├── docker-compose.yml           +
 ├── render.yaml                  +
 ├── .env.example
-├── AI_USAGE.md
 ├── requirements.txt
 ├── pyproject.toml
 └── README.md
@@ -364,7 +362,7 @@ dsia-26-27-agusti-carlos/
 |---|---|---|---|---|
 | S1 · 27 oct - 2 nov | 3-4 h | Mover `data/shots_laliga.csv` a `data/raw/` y actualizar la ruta por defecto de la CLI y del test de integración; `config.py` (logging), `ingesta.py`, `features.py`, `train.py`, `evaluate.py` | `ingest` y `train` con logs; `xg_model.joblib` + `xg_model.json`; tabla de métricas frente a `xg_understat`; `calibration.png` | commit `feat: entrenamiento y evaluación xG` |
 | S2 · 3 - 9 nov | 1-2 h | `predictor.py`, comando `score`, `metrics.py`, `genai.py` (solo mock), `conftest.py` + `shots_mini.csv`, `test_features.py`, `test_predictor.py`, `test_genai.py` | `score` produce `shots_scored.csv` y `player_metrics.csv`; informe mock de un jugador; CI en verde | commit `feat: scoring, métricas por jugador e IA mock` |
-| 10 - 12 nov | 1-2 h | `NvidiaClient` en `genai.py`, `.env.example`, `AI_USAGE.md`, `README.md` (uso + métricas + calibración), `requirements.txt` | Informe real con el LLM de NVIDIA desde la CLI; README completo del Proyecto II | **tag `v0.2.0` · entrega Proyecto II** |
+| 10 - 12 nov | 1-2 h | `NvidiaClient` en `genai.py`, `.env.example`, `README.md` (uso + métricas + calibración), `requirements.txt` | Informe real con el LLM de NVIDIA desde la CLI; README completo del Proyecto II | **tag `v0.2.0` · entrega Proyecto II** |
 | S3 · 13 - 16 nov | 3-4 h | `api/main.py`, `api/schemas.py`, `test_api.py` | Los cuatro endpoints desde `/docs`, con errores 400/404/502/504/500 y logs con `request_id` | commit `feat: API FastAPI` |
 | S4 · 17 - 23 nov | 1-2 h | `dashboard/` (2 ficheros), `smoke_test.sh`, Docker, docker-compose, Render, job docker del CI, sección de despliegue del README, `requirements.txt` actualizado | Dashboard funcionando contra la API; smoke test en verde en local y en el CI | **tag `v1.0.0-rc` · Release Candidate** |
 | S5 · 24 - 30 nov | 1-2 h | Despliegue en Render, URLs en el README y guion de la exposición | Demo de 5-7 min ensayada | **tag `v1.0.0` · exposición** |
