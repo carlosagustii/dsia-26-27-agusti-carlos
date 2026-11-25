@@ -181,7 +181,7 @@ Protocolo:
 | `POST /predict` | `{"x", "y", "minute", "situation", "shot_type", "last_action"}` (`minute` por defecto 45, `last_action` opcional) | `{"xg", "source": "model" \| "penalty_rule", "request_id"}` |
 | `GET /players` | query `season` (2020), `min_shots` (1) | Lista de `{player_id, player, season, shots, goals}` ordenada por tiros |
 | `GET /players/{player_id}/metrics` | path `player_id`, query `season` (2020) | Todas las columnas de `PLAYER_METRICS_COLUMNS` |
-| `POST /analyze` | `{"player_id", "season": 2019 \| 2020}` | `{"player_id", "season", "report", "provider", "latency_ms", "request_id"}` |
+| `POST /analyze` | `{"player_id", "season": 2019 \| 2020}` | `{"player_id", "season", "report", "provider", "model", "latency_ms", "request_id"}` (`model` es `null` con el mock) |
 | `GET /metrics` | — | Uptime, peticiones por ruta (count, errores 4xx/5xx, % de errores, p50/p95), latencia y fallos del LLM, últimas 20 peticiones e información del modelo |
 
 `/players` es nuevo respecto al diseño inicial: lo necesita el desplegable de jugadores del dashboard.
@@ -199,7 +199,7 @@ Protocolo:
 | 503 | Falta el modelo o las métricas, o la IA no está configurada (`GenAIConfigError`). |
 | 504 | El proveedor de IA supera el timeout (`GenAITimeoutError`). |
 
-**Logs y trazabilidad:** un middleware genera un `request_id` por petición. Lo devuelve en la cabecera `X-Request-ID` y escribe una línea con `request_id`, método, ruta, estado y `latency_ms`. También registra la petición en `MetricsStore` con la plantilla de ruta (`/players/{player_id}/metrics`), salvo `/metrics`. Los errores no previstos se capturan en el propio middleware para que el 500 también lleve `request_id` y quede contado.
+**Logs y trazabilidad:** un middleware genera un `request_id` por petición. Lo devuelve en la cabecera `X-Request-ID` y escribe una línea con `request_id`, método, ruta, estado y `latency_ms`, con nivel según el resultado: INFO (2xx), WARNING (4xx, error del cliente) y ERROR (5xx). También registra la petición en `MetricsStore` con la plantilla de ruta (`/players/{player_id}/metrics`), salvo `/metrics`. Los errores no previstos se capturan en el propio middleware para que el 500 también lleve `request_id` y quede contado.
 
 ### 3.7 Dashboard · Proyecto III
 

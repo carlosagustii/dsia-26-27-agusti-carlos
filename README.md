@@ -257,7 +257,7 @@ Dockerfile · docker-compose.yml · render.yaml
 ## Tests
 
 ```bash
-uv run pytest -q                       # todos (144 tests)
+uv run pytest -q                       # todos (149 tests)
 uv run pytest -q -m "not integration"  # sin los que leen el CSV real
 uv run pytest -q --cov=football_shots --cov-report=term-missing --cov-fail-under=60
 ```
@@ -318,7 +318,7 @@ curl -X POST http://localhost:8000/predict -H 'Content-Type: application/json' \
 
 curl -X POST http://localhost:8000/analyze -H 'Content-Type: application/json' \
   -d '{"player_id": 2518, "season": 2020}'
-# {"player_id": 2518, "season": 2020, "report": "...", "provider": "nvidia", "latency_ms": ..., "request_id": "..."}
+# {"player_id": 2518, "season": 2020, "report": "...", "provider": "nvidia", "model": "nvidia/nemotron-3.5-bolt-e4b", "latency_ms": ..., "request_id": "..."}
 ```
 
 ### Arranque en local con uv
@@ -367,7 +367,7 @@ El dashboard espera a que `/health` esté en verde. Sin key de NVIDIA, la API sa
   - la información del modelo (entrenamiento y métricas de test frente a Understat).
   
   No cuenta sus propias peticiones.
-- **`request_id`:** cada petición recibe un id que aparece en la cabecera `X-Request-ID`, en la línea de log (`request request_id=… method=… path=… status=… latency_ms=…`), en el cuerpo de los errores y en el dashboard. Con él se encuentra en los logs cualquier error que vea el usuario.
+- **`request_id`:** cada petición recibe un id que aparece en la cabecera `X-Request-ID`, en la línea de log (`request request_id=… method=… path=… status=… latency_ms=…`; nivel INFO si va bien, WARNING en los 4xx y ERROR en los 5xx), en el cuerpo de los errores y en el dashboard. Con él se encuentra en los logs cualquier error que vea el usuario.
 
 La pestaña **Operación** del dashboard muestra todo esto.
 
