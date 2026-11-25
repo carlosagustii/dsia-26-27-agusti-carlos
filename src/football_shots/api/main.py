@@ -75,6 +75,15 @@ def _native(value):
     return value.item() if hasattr(value, "item") else value
 
 
+def _log_level(status_code: int) -> int:
+    """Nivel del log de cada petición: INFO (2xx/3xx), WARNING (4xx, error del cliente), ERROR (5xx)."""
+    if status_code >= 500:
+        return logging.ERROR
+    if status_code >= 400:
+        return logging.WARNING
+    return logging.INFO
+
+
 def _error(request: Request, status_code: int, message: str) -> JSONResponse:
     """Cuerpo de error común: {"error", "request_id"}."""
     request_id = getattr(request.state, "request_id", "-")
@@ -162,7 +171,8 @@ def create_app(
         route = request.scope.get("route")
         route_path = getattr(route, "path", None) or UNMATCHED_ROUTE
         response.headers["X-Request-ID"] = request_id
-        logger.info(
+        logger.log(
+            _log_level(response.status_code),
             "request request_id=%s method=%s path=%s status=%s latency_ms=%.1f",
             request_id, request.method, request.url.path, response.status_code, latency_ms,
         )
@@ -296,6 +306,7 @@ def create_app(
             season=body.season,
             report=report,
             provider=client.name,
+            model=getattr(client, "model", None),
             latency_ms=round(latency_ms, 1),
             request_id=request.state.request_id,
         )

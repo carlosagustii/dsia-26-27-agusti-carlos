@@ -86,6 +86,7 @@ class AnalyzeOut(BaseModel):
     season: int
     report: str
     provider: str
+    model: str | None = Field(default=None, description="Modelo del LLM (None con el mock)")
     latency_ms: float
     request_id: str
 

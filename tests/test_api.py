@@ -223,9 +223,25 @@ def test_analyze_con_mock(client, jugador_2020):
     cuerpo = respuesta.json()
     assert respuesta.status_code == 200
     assert cuerpo["provider"] == "mock"
+    assert cuerpo["model"] is None  # el mock no tiene modelo
     assert jugador_2020["player"] in cuerpo["report"]
     assert cuerpo["latency_ms"] >= 0
     assert cuerpo["request_id"] == respuesta.headers["X-Request-ID"]
+
+
+def test_analyze_devuelve_el_modelo_del_llm(mini_model_path, metrics_path, jugador_2020):
+    class ClienteConModelo:
+        name = "nvidia"
+        model = "nvidia/nemotron-3.5-bolt-e4b"
+
+        def generate_report(self, metrics):
+            return f"Informe de {metrics['player']}"
+
+    client = TestClient(create_app(mini_model_path, metrics_path, genai_client=ClienteConModelo()))
+
+    cuerpo = client.post("/analyze", json={"player_id": jugador_2020["player_id"]}).json()
+
+    assert (cuerpo["provider"], cuerpo["model"]) == ("nvidia", "nvidia/nemotron-3.5-bolt-e4b")
 
 
 def test_analyze_jugador_inexistente_es_404(client):
@@ -318,6 +334,52 @@ def test_error_inesperado_es_500_generico_sin_traza(mini_model_path, metrics_pat
     assert cuerpo["error"] == "Error interno"
     assert "detalle interno" not in client.post("/predict", json=TIRO).text
     assert client.get("/metrics").json()["requests"]["/predict"]["errors_5xx"] == 2
+
+
+# ---------- nivel de log según el código de respuesta ----------
+
+
+def logs_de_peticion(caplog):
+    return [r for r in caplog.records if r.name == "football_shots.api" and r.getMessage().startswith("request ")]
+
+
+@pytest.fixture
+def client_roto(mini_model_path, metrics_path):
+    """App cuyo predictor lanza un error inesperado (se crea en la fase de setup, antes de caplog)."""
+
+    class PredictorRoto:
+        metadata = {}
+
+        def predict_one(self, shot):
+            raise RuntimeError("fallo interno")
+
+    app = create_app(mini_model_path, metrics_path, genai_client=MockClient())
+    app.state.predictor = PredictorRoto()
+    return TestClient(app)
+
+
+@pytest.mark.parametrize(
+    ("peticion", "nivel"),
+    [
+        (lambda c: c.get("/health"), "INFO"),
+        (lambda c: c.post("/predict", json={**TIRO, "x": 7}), "WARNING"),
+        (lambda c: c.get("/players/999999/metrics"), "WARNING"),
+    ],
+)
+def test_nivel_de_log_segun_estado(client, caplog, peticion, nivel):
+    caplog.set_level("INFO", logger="football_shots.api")
+
+    peticion(client)
+
+    assert [r.levelname for r in logs_de_peticion(caplog)] == [nivel]
+
+
+def test_error_5xx_se_loguea_como_error(client_roto, caplog):
+    caplog.set_level("INFO", logger="football_shots.api")
+
+    client_roto.post("/predict", json=TIRO)
+
+    assert [r.levelname for r in logs_de_peticion(caplog)] == ["ERROR"]
 
 
 # ---------- monitoring ----------

@@ -209,8 +209,9 @@ with tab_player:
             report = st.session_state.get(report_key)
             if report:
                 st.info(report["report"])
+                model_name = f" ({report['model']})" if report.get("model") else ""
                 st.caption(
-                    f"Proveedor {report['provider']} · {report['latency_ms']:.0f} ms · "
+                    f"Proveedor {report['provider']}{model_name} · {report['latency_ms']:.0f} ms · "
                     f"request_id {report['request_id']}"
                 )
 
