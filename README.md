@@ -18,6 +18,8 @@ A partir de los tiros de LaLiga (temporadas 2019-20 y 2020-21) se construye un p
 | **Proyecto II** | ingesta, features, entrenamiento, evaluación, scoring, métricas por jugador, IA generativa | `v0.2.0` |
 | **Proyecto III** | API FastAPI + dashboard Streamlit + Docker + Render (amplía este mismo repo) | `v1.0.0-rc` / `v1.0.0` |
 
+**Demo en vivo:** [dashboard](https://shotiq-dashboard.onrender.com) · [API (`/docs`)](https://shotiq-api.onrender.com/docs). Están en el plan gratuito de Render: si llevan un rato sin uso, tardan ~1 min en despertar.
+
 El diseño completo (diagramas, decisiones y limitaciones) está en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md).
 
 ---
@@ -399,7 +401,7 @@ Render, con dos Web Services Docker definidos en `render.yaml`:
 4. **Smoke:**
 
    ```bash
-   scripts/smoke_test.sh https://<shotiq-api>.onrender.com
+   scripts/smoke_test.sh https://shotiq-api.onrender.com
    ```
 
    Con `SMOKE_ANALYZE=1` delante, también prueba `/analyze` (gasta una llamada al LLM).
@@ -409,8 +411,8 @@ Pasos en Render: *New → Blueprint →* elegir este repo, rellenar `NVIDIA_API_
 
 | Servicio | URL |
 |---|---|
-| API (`shotiq-api`) | `<pendiente>` |
-| Dashboard (`shotiq-dashboard`) | `<pendiente>` |
+| API (`shotiq-api`) | https://shotiq-api.onrender.com · documentación interactiva en [`/docs`](https://shotiq-api.onrender.com/docs) |
+| Dashboard (`shotiq-dashboard`) | https://shotiq-dashboard.onrender.com |
 
 El plan gratuito de Render se duerme tras ~15 min sin uso y tarda ~1 min en despertar: abre las URLs unos minutos antes de usarlas.
 
