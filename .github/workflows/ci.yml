@@ -36,10 +36,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build de la imagen
-        run: docker build -t xg-app .
+        run: docker build -t shotiq .
 
       - name: Arranque de la API (IA en modo mock, sin secretos)
-        run: docker run -d -p 8000:8000 -e GENAI_PROVIDER=mock --name xg xg-app
+        run: docker run -d -p 8000:8000 -e GENAI_PROVIDER=mock --name shotiq shotiq
 
       - name: Esperar a /health (máx. ~60 s)
         run: |
@@ -56,4 +56,4 @@ jobs:
 
       - name: Logs del contenedor
         if: always()
-        run: docker logs xg
+        run: docker logs shotiq

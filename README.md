@@ -1,6 +1,6 @@
-# Football Shots · Modelo xG de LaLiga
+# ShotIQ · Expected goals de LaLiga con informes de scouting por IA
 
-![CI](https://github.com/carlosagustii/dsia-26-27-agusti-carlos/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/carlosagustii/ShotIQ/actions/workflows/ci.yml/badge.svg)
 
 Proyecto de la asignatura *Desarrollo de Soluciones de IA* (máster, curso 2026-27).
 
@@ -388,29 +388,29 @@ Todas las respuestas de error tienen la forma `{"error": "...", "request_id": ".
 
 Render, con dos Web Services Docker definidos en `render.yaml`:
 
-1. **Build:** Render construye el `Dockerfile` del repo (rama `main`). En local: `docker build -t xg-app .`
+1. **Build:** Render construye el `Dockerfile` del repo (rama `main`). En local: `docker build -t shotiq .`
 2. **Variables de entorno:**
-   - En `xg-api`: `NVIDIA_API_KEY` (a mano en el panel de Render; nunca en el repo). El resto ya viene en `render.yaml`: `GENAI_PROVIDER=nvidia`, `NVIDIA_MODEL`, `NVIDIA_BASE_URL`, `GENAI_TIMEOUT_S` y `LOG_LEVEL`.
-   - En `xg-dashboard`: `API_URL` con la URL pública de `xg-api`.
+   - En `shotiq-api`: `NVIDIA_API_KEY` (a mano en el panel de Render; nunca en el repo). El resto ya viene en `render.yaml`: `GENAI_PROVIDER=nvidia`, `NVIDIA_MODEL`, `NVIDIA_BASE_URL`, `GENAI_TIMEOUT_S` y `LOG_LEVEL`.
+   - En `shotiq-dashboard`: `API_URL` con la URL pública de `shotiq-api`.
 3. **Arranque:**
-   - `xg-api` usa el `CMD` de la imagen (`uvicorn` en `$PORT`).
-   - `xg-dashboard` usa `streamlit run dashboard/app.py --server.port $PORT`.
-   - Render comprueba `xg-api` con `/health`.
+   - `shotiq-api` usa el `CMD` de la imagen (`uvicorn` en `$PORT`).
+   - `shotiq-dashboard` usa `streamlit run dashboard/app.py --server.port $PORT`.
+   - Render comprueba `shotiq-api` con `/health`.
 4. **Smoke:**
 
    ```bash
-   scripts/smoke_test.sh https://<xg-api>.onrender.com
+   scripts/smoke_test.sh https://<shotiq-api>.onrender.com
    ```
 
    Con `SMOKE_ANALYZE=1` delante, también prueba `/analyze` (gasta una llamada al LLM).
 5. **Rollback:** `git checkout <tag anterior>` (p. ej. `v1.0.0-rc`) y redeploy en Render de ese commit (*Manual Deploy → Deploy a specific commit*), o revertir el commit en `main`.
 
-Pasos en Render: *New → Blueprint →* elegir este repo, rellenar `NVIDIA_API_KEY` en `xg-api`, desplegar, copiar su URL en `API_URL` de `xg-dashboard` y redesplegar el dashboard.
+Pasos en Render: *New → Blueprint →* elegir este repo, rellenar `NVIDIA_API_KEY` en `shotiq-api`, desplegar, copiar su URL en `API_URL` de `shotiq-dashboard` y redesplegar el dashboard.
 
 | Servicio | URL |
 |---|---|
-| API (`xg-api`) | `<pendiente>` |
-| Dashboard (`xg-dashboard`) | `<pendiente>` |
+| API (`shotiq-api`) | `<pendiente>` |
+| Dashboard (`shotiq-dashboard`) | `<pendiente>` |
 
 El plan gratuito de Render se duerme tras ~15 min sin uso y tarda ~1 min en despertar: abre las URLs unos minutos antes de usarlas.
 

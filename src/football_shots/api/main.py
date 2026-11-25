@@ -1,4 +1,4 @@
-"""API FastAPI del modelo xG (Proyecto III).
+"""API FastAPI de ShotIQ: modelo xG de LaLiga (Proyecto III).
 
 La API va encima del núcleo de los Proyectos I y II y no lo reimplementa:
 - `XGPredictor` para /predict,
@@ -51,7 +51,7 @@ from football_shots.predictor import ModelNotFoundError, XGPredictor
 
 logger = logging.getLogger("football_shots.api")
 
-PACKAGE_NAME = "dsia-26-27-agusti-carlos"
+PACKAGE_NAME = "shotiq"
 UNMATCHED_ROUTE = "unmatched"
 NOT_RECORDED_ROUTES = {"/metrics"}  # el refresco del dashboard no ensucia las cifras
 
@@ -145,7 +145,7 @@ def create_app(
     """Crea la app con sus dependencias. `genai_client=None` usa `get_client()`."""
     config.setup_logging()
     app = FastAPI(
-        title="xG LaLiga API",
+        title="ShotIQ API",
         description="Modelo de expected goals (xG) e informes de scouting con IA generativa.",
         version=_app_version(),
     )

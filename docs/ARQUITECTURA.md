@@ -1,4 +1,4 @@
-# Arquitectura del proyecto xG
+# Arquitectura de ShotIQ
 
 Proyecto de máster · Desarrollo de Soluciones de IA (Python)
 Modelo de expected goals (xG) con datos de Understat + informes de scouting con IA generativa.
@@ -56,7 +56,7 @@ flowchart LR
   subgraph P3["Proyecto III · producto"]
     direction TB
     A["API FastAPI síncrona<br/>/health · /predict · /players<br/>/players/{id}/metrics · /analyze · /metrics"] --> C["Dashboard Streamlit<br/>Predice un tiro · Jugador + informe IA<br/>Operación"]
-    C --> R["Docker · docker-compose<br/>Render (xg-api + xg-dashboard)"]
+    C --> R["Docker · docker-compose<br/>Render (shotiq-api + shotiq-dashboard)"]
   end
 
   X["Transversal<br/>logs + request_id · .env · tests + CI<br/>job docker + smoke test"]
@@ -224,7 +224,7 @@ El dashboard solo conoce `API_URL`. Nunca importa `football_shots` ni lee `data/
 | `scripts/smoke_test.sh` | Comprueba `/health` (200 y `ok`), `/predict` (`xg` entre 0 y 1) y `/players`; `/analyze` solo con `SMOKE_ANALYZE=1` | III |
 | `Dockerfile` · `.dockerignore` | Imagen única (`python:3.12-slim`, usuario sin privilegios) que regenera `data/processed` en el build; CMD por defecto: la API en `$PORT` | III |
 | `docker-compose.yml` | Servicios `api` y `dashboard` con la misma imagen; el dashboard espera a que la API esté sana | III |
-| `render.yaml` | Blueprint de Render con dos Web Services Docker: `xg-api` y `xg-dashboard` | III |
+| `render.yaml` | Blueprint de Render con dos Web Services Docker: `shotiq-api` y `shotiq-dashboard` | III |
 | `README.md` | Uso de la CLI, métricas del modelo, curva de calibración y sección de despliegue | II y III |
 
 **Dependencias** (se añaden a las que ya usa el paquete, como pandas y Pydantic):
@@ -248,7 +248,7 @@ Por defecto `uv export` incluye el grupo dev (pytest). Si solo se quieren las de
 - Curva de calibración (`reports/calibration.png`).
 
 **Despliegue (sección del README, Proyecto III):**
-1. **Build:** Render construye el `Dockerfile` (en local: `docker build -t xg-app .` o `docker compose up --build`).
+1. **Build:** Render construye el `Dockerfile` (en local: `docker build -t shotiq .` o `docker compose up --build`).
 2. **Variables de entorno:** `NVIDIA_API_KEY` a mano en Render (en local, en `.env`); el resto en `render.yaml`. `API_URL` del dashboard con la URL pública de la API.
 3. **Arranque:**
    - API: `uvicorn football_shots.api.main:app --host 0.0.0.0 --port $PORT` (CMD de la imagen)
@@ -301,7 +301,7 @@ Por defecto `uv export` incluye el grupo dev (pytest). Si solo se quieren las de
 Los ficheros del Proyecto III van marcados con `+`.
 
 ```
-dsia-26-27-agusti-carlos/
+ShotIQ/
 ├── .github/workflows/ci.yml             # + job docker
 ├── data/
 │   ├── raw/

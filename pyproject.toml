@@ -1,7 +1,7 @@
 [project]
-name = "dsia-26-27-agusti-carlos"
+name = "shotiq"
 version = "1.0.0rc1"
-description = "Modelo de expected goals (xG) con datos de Understat e informes de scouting con IA generativa"
+description = "ShotIQ: modelo de expected goals (xG) de LaLiga con informes de scouting por IA generativa"
 readme = "README.md"
 authors = [
     { name = "carlosagustii", email = "carlosacanga03@gmail.com" }

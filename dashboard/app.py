@@ -1,4 +1,4 @@
-"""Dashboard Streamlit del modelo xG de LaLiga.
+"""Dashboard Streamlit de ShotIQ (modelo xG de LaLiga).
 
 Solo consume la API por HTTP (api_client.py, variable API_URL). No importa
 football_shots ni lee data/ ni models/.
@@ -38,7 +38,7 @@ PRESETS = {
 DEFAULT_PLAYER_ID = 2518  # Marcos Llorente, guion de la demo
 DEFAULT_SEASON = 2020
 
-st.set_page_config(page_title="xG LaLiga", page_icon="⚽", layout="wide")
+st.set_page_config(page_title="ShotIQ", page_icon="⚽", layout="wide")
 
 
 # ---------- utilidades ----------
@@ -96,7 +96,8 @@ def cached_players(season: int) -> list[dict]:
 # ---------- barra lateral: estado de la API ----------
 
 with st.sidebar:
-    st.title("⚽ xG LaLiga")
+    st.title("⚽ ShotIQ")
+    st.caption("Expected goals de LaLiga con informes de scouting por IA")
     try:
         health = api_client.health()
         light = "🟢 ok" if health["status"] == "ok" else "🟠 degraded"

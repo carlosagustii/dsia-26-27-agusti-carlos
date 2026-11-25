@@ -3,10 +3,10 @@
 # se rellenan a mano en el panel de Render (nunca se escriben aquí).
 services:
   - type: web
-    name: xg-api
+    name: shotiq-api
     runtime: docker
     plan: free
-    repo: https://github.com/carlosagustii/dsia-26-27-agusti-carlos
+    repo: https://github.com/carlosagustii/ShotIQ
     branch: main
     dockerfilePath: ./Dockerfile
     dockerContext: .
@@ -27,15 +27,15 @@ services:
         sync: false
 
   - type: web
-    name: xg-dashboard
+    name: shotiq-dashboard
     runtime: docker
     plan: free
-    repo: https://github.com/carlosagustii/dsia-26-27-agusti-carlos
+    repo: https://github.com/carlosagustii/ShotIQ
     branch: main
     dockerfilePath: ./Dockerfile
     dockerContext: .
     dockerCommand: sh -c "streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true"
     envVars:
-      # URL pública de xg-api (p. ej. https://xg-api-xxxx.onrender.com), se pega a mano.
+      # URL pública de shotiq-api (p. ej. https://shotiq-api-xxxx.onrender.com), se pega a mano.
       - key: API_URL
         sync: false
