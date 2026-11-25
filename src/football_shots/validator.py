@@ -18,6 +18,11 @@ import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic import ValidationError as PydanticValidationError
 
+# Categorías permitidas. Son alias a nivel de módulo para que la API acepte
+# exactamente las mismas que la ingesta (ARQUITECTURA.md, decisión 15).
+Situation = Literal["OpenPlay", "FromCorner", "SetPiece", "DirectFreekick", "Penalty"]
+ShotType = Literal["RightFoot", "LeftFoot", "Head", "OtherBodyPart"]
+
 
 class ShotRecord(BaseModel):
     """Un tiro: una fila de data/raw/shots_laliga.csv.
@@ -57,8 +62,8 @@ class ShotRecord(BaseModel):
     y: float = Field(ge=0, le=1)
 
     # Solo los valores que aparecen en los datos.
-    situation: Literal["OpenPlay", "FromCorner", "SetPiece", "DirectFreekick", "Penalty"]
-    shot_type: Literal["RightFoot", "LeftFoot", "Head", "OtherBodyPart"]
+    situation: Situation
+    shot_type: ShotType
 
     # Texto opcional: puede venir vacío (None).
     last_action: str | None = None

@@ -33,9 +33,13 @@ TEST_SEASON = 2020
 
 GENAI_PROVIDER = os.getenv("GENAI_PROVIDER", "mock")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
-NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "nvidia/nemotron-3.5-bolt-e4b")
-NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "meta/llama-3.3-70b-instruct")
+NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
+NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "nvidia/nemotron-3.5-bolt-e4b")
 GENAI_TIMEOUT_S = float(os.getenv("GENAI_TIMEOUT_S", "30"))
+
+# URL de la API que consume el dashboard. Aquí solo queda documentada: el
+# dashboard la lee con os.getenv directamente (no importa football_shots).
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 

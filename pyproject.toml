@@ -1,24 +1,29 @@
 [project]
-name = "dsia-26-27-agusti-carlos"
-version = "0.2.0"
-description = "Modelo de expected goals (xG) con datos de Understat e informes de scouting con IA generativa"
+name = "shotiq"
+version = "1.0.0rc1"
+description = "ShotIQ: modelo de expected goals (xG) de LaLiga con informes de scouting por IA generativa"
 readme = "README.md"
 authors = [
     { name = "carlosagustii", email = "carlosacanga03@gmail.com" }
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.165.0",
     "joblib>=1.6.0",
     "matplotlib>=3.11.2",
     "openai>=3.57.0",
     "pandas>=3.0.6",
     "pydantic>=2.13.5",
     "python-dotenv>=1.2.4",
+    "requests>=2.34.2",
     "scikit-learn>=1.9.1",
+    "streamlit>=1.67.0",
+    "uvicorn[standard]>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
 ]

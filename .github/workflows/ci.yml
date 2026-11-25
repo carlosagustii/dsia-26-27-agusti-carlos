@@ -28,3 +28,32 @@ jobs:
         run: pytest -q --cov=football_shots --cov-report=term-missing --cov-fail-under=60
                                            # 4. ejecuta tus tests; si fallan o la
                                            #    cobertura baja del 60 %, sale ❌
+  docker:
+    needs: test                    # solo si los tests pasan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build de la imagen
+        run: docker build -t shotiq .
+
+      - name: Arranque de la API (IA en modo mock, sin secretos)
+        run: docker run -d -p 8000:8000 -e GENAI_PROVIDER=mock --name shotiq shotiq
+
+      - name: Esperar a /health (máx. ~60 s)
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null; then
+              echo "API lista tras ${i} intentos"; exit 0
+            fi
+            sleep 2
+          done
+          echo "La API no respondió a tiempo"; exit 1
+
+      - name: Smoke test
+        run: bash scripts/smoke_test.sh http://localhost:8000
+
+      - name: Logs del contenedor
+        if: always()
+        run: docker logs shotiq

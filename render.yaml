@@ -1,0 +1,41 @@
+# Blueprint de Render: dos Web Services Docker con la misma imagen.
+# Render → New → Blueprint → elegir este repo. Las variables con `sync: false`
+# se rellenan a mano en el panel de Render (nunca se escriben aquí).
+services:
+  - type: web
+    name: shotiq-api
+    runtime: docker
+    plan: free
+    repo: https://github.com/carlosagustii/ShotIQ
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # Sin dockerCommand: usa el CMD de la imagen (uvicorn en $PORT).
+    healthCheckPath: /health
+    envVars:
+      - key: GENAI_PROVIDER
+        value: nvidia
+      - key: NVIDIA_MODEL
+        value: nvidia/nemotron-3.5-bolt-e4b
+      - key: NVIDIA_BASE_URL
+        value: https://integrate.api.nvidia.com/v1
+      - key: GENAI_TIMEOUT_S
+        value: "30"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: NVIDIA_API_KEY
+        sync: false
+
+  - type: web
+    name: shotiq-dashboard
+    runtime: docker
+    plan: free
+    repo: https://github.com/carlosagustii/ShotIQ
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: sh -c "streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true"
+    envVars:
+      # URL pública de shotiq-api (p. ej. https://shotiq-api-xxxx.onrender.com), se pega a mano.
+      - key: API_URL
+        sync: false
